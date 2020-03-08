@@ -1,71 +1,40 @@
-import React, {Component, Fragment} from "react";
-import {createPortal} from 'react-dom'
+import React, {Component} from "react";
 
-const BoundaryHOC = ProtectedComponent => class Boundary extends Component {
-    state = {
-        hasError: false
-    };
-    componentDidCatch = () => {
-        this.setState({hasError: true});
-    };
-    render() {
-        const {hasError} = this.state;
-        if (hasError) {
-            return <ErrorFallback/>;
-        } else {
-            return <ProtectedComponent/>;
-        }
+const MAX_PIZZAS = 20;
+
+const eatPizaa = (state, props) => {
+    const {pizzas} = state;
+    if (pizzas < MAX_PIZZAS) {
+        return {
+            pizzas: pizzas + 1
+        };
+    } else {
+        return null;
     }
 };
 
-class ErrorMaker extends Component {
+class Controlled extends Component {
     state = {
-        friends: ['asdf', 'asdf', 'df']
-    }
-    componentDidMount() {
-        setTimeout(() => {
-            this.setState({friends: undefined})
-        }, 2000)
-    }
+        pizzas: 0
+    };
     render() {
-        const {friends} = this.state
-        return (friends.map(friend => ` ${friend} `));
+        const {pizzas} = this.state;
+        return (
+            <button onClick={this._handleClick}>{`I have eaten ${pizzas} ${
+                pizzas === 1
+                    ? "pizza"
+                    : "pizzas"}`}</button>
+        );
     }
+    _handleClick = () => {
+        this.setState(eatPizaa);
+    };
 }
-
-const PErrorMaker = BoundaryHOC(ErrorMaker)
-
-class Portals extends Component {
-    render() {
-        return createPortal(
-            <Message/>, document.getElementById("touchme"))
-    }
-}
-
-const PPortals = BoundaryHOC(Portals)
-
-const Message = () => "Just Touched it!"
-
-class ReturnTypes extends Component {
-    render() {
-        // string return 이 가능하다! (16버전부터)
-        return "hello";
-    }
-}
-const PReturnTypes = BoundaryHOC(ReturnTypes)
-
-const ErrorFallback = () => "ERROR"
 
 class App extends Component {
     render() {
-        return (
-            <Fragment>
-                <PReturnTypes/>
-                <PPortals/>
-                <PErrorMaker/>
-            </Fragment>
-        )
+        return <Controlled/>;
     }
 }
 
-export default BoundaryHOC(App)
+export default App;
